@@ -149,8 +149,7 @@ static void ReadSourceTargetBuild(const std::map<std::string, std::string>& meta
 // Checks the build version, fingerprint and timestamp in the metadata of the A/B package.
 // Downgrading is not allowed unless explicitly enabled in the package and only for
 // incremental packages.
-static bool CheckAbSpecificMetadata(const std::map<std::string, std::string>& metadata,
-                                    RecoveryUI* ui) {
+static bool CheckAbSpecificMetadata(const std::map<std::string, std::string>& metadata) {
   // Incremental updates should match the current build.
   auto device_pre_build = android::base::GetProperty("ro.build.version.incremental", "");
   auto pkg_pre_build = get_value(metadata, "pre-build-incremental");
@@ -170,7 +169,7 @@ static bool CheckAbSpecificMetadata(const std::map<std::string, std::string>& me
   }
 
   // Check for downgrade version.
-  bool undeclared_downgrade = false;
+  /*bool undeclared_downgrade = false;
   int64_t build_timestamp =
       android::base::GetIntProperty("ro.build.date.utc", std::numeric_limits<int64_t>::max());
   int64_t pkg_post_timestamp = 0;
@@ -195,13 +194,12 @@ static bool CheckAbSpecificMetadata(const std::map<std::string, std::string>& me
   if (undeclared_downgrade &&
       !(ui->IsTextVisible() && ask_to_continue_downgrade(ui->GetDevice()))) {
     return false;
-  }
+  }*/
 
   return true;
 }
 
-bool CheckPackageMetadata(const std::map<std::string, std::string>& metadata, OtaType ota_type,
-                          RecoveryUI* ui) {
+bool CheckPackageMetadata(const std::map<std::string, std::string>& metadata, OtaType ota_type) {
   auto package_ota_type = get_value(metadata, "ota-type");
   auto expected_ota_type = OtaTypeToString(ota_type);
   if (ota_type != OtaType::AB && ota_type != OtaType::BRICK) {
@@ -242,7 +240,7 @@ bool CheckPackageMetadata(const std::map<std::string, std::string>& metadata, Ot
   }
 
   if (ota_type == OtaType::AB) {
-    return CheckAbSpecificMetadata(metadata, ui);
+    return CheckAbSpecificMetadata(metadata);
   }
 
   return true;
@@ -409,7 +407,7 @@ static InstallResult TryUpdateBinary(Package* package, bool* wipe_cache,
   // Package does not declare itself as an A/B package, but device only supports A/B;
   //   still calls CheckPackageMetadata to get a meaningful error message.
   if (package_is_ab || device_only_supports_ab) {
-    if (!CheckPackageMetadata(metadata, OtaType::AB, ui)) {
+    if (!CheckPackageMetadata(metadata, OtaType::AB)) {
       log_buffer->push_back(android::base::StringPrintf("error: %d", kUpdateBinaryCommandFailure));
       return INSTALL_ERROR;
     }
@@ -605,12 +603,12 @@ static InstallResult VerifyAndInstallPackage(Package* package, bool* wipe_cache,
   ui->ShowProgress(VERIFICATION_PROGRESS_FRACTION, VERIFICATION_PROGRESS_TIME);
 
   // Verify package.
-  if (!verify_package(package, ui)) {
+  /*if (!verify_package(package, ui)) {
     log_buffer->push_back(android::base::StringPrintf("error: %d", kZipVerificationFailure));
     if (!ui->IsTextVisible() || !ask_to_continue_unverified(ui->GetDevice())) {
         return INSTALL_CORRUPT;
     }
-  }
+  }*/
 
   // Verify and install the contents of the package.
   ui->Print("Installing update...\n");
