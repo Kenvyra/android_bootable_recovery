@@ -87,6 +87,3 @@ ifneq ($(TARGET_RECOVERY_DEVICE_MODULES),)
 endif
 
 include $(BUILD_PHONY_PACKAGE)
-
-include \
-    $(LOCAL_PATH)/updater/Android.mk \
