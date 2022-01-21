@@ -198,3 +198,96 @@ cc_binary_host {
         },
     },
 }
+
+genrule {
+    name: "register.inc",
+    out: ["register.inc"],
+    cmd: "touch $(out)",
+    product_variables: {
+        target_recovery_updater_libs: {
+            cmd: "libs=%s && " +
+                "for lib in $$(libs); do " +
+                "echo \"extern void Register_$${lib}(void);\" >> $(out); " +
+                "done && " +
+                "echo \"void RegisterDeviceExtensions() {\" >> $(out) && " +
+                "for lib in $$(libs); do " +
+                "echo \"  Register_$${lib}();\" >> $(out); " +
+                "done && " +
+                "echo \"}\" >> $(out) ",
+        }
+    }
+}
+
+cc_binary {
+    name: "updater",
+    defaults: [
+        "target_recovery_updater_libs",
+        "target_recovery_updater_extra_libs",
+    ],
+    srcs: ["updater_main.cpp"],
+    local_include_dirs: ["include"],
+    static_libs: [
+        "libupdater_device",
+        "libupdater_core",
+        "libapplypatch",
+        "libbootloader_message",
+        "libbspatch",
+        "libedify",
+        "libotautil",
+        "libext4_utils",
+        "libdm",
+        "libfec",
+        "libfec_rs",
+        "libavb",
+        "libverity_tree",
+        "liblog",
+        "liblp",
+        "libselinux",
+        "libsparse",
+        "libsquashfs_utils",
+        "libbrotli",
+        "libbz",
+        "libziparchive",
+        "libz",
+        "libbase",
+        "libcrypto_static",
+        "libcrypto_utils",
+        "libcutils",
+        "libutils",
+        "libext2_com_err",
+        "libext2_blkid",
+        "libext2_quota",
+        "libext2_uuid",
+        "libext2_e2p",
+        "libext2fs",
+        "libfs_mgr",
+        "libtune2fs",
+    ],
+    header_libs: ["libgtest_prod_headers"],
+    generated_headers: [
+       "register.inc",
+    ],
+    static_executable: true,
+}
+
+cc_defaults {
+    name: "target_recovery_updater_libs",
+    product_variables: {
+        target_recovery_updater_libs: {
+            static_libs:[
+                "%s",
+            ],
+        }
+    }
+}
+
+cc_defaults {
+    name: "target_recovery_updater_extra_libs",
+    product_variables: {
+        target_recovery_updater_extra_libs: {
+            static_libs:[
+                "%s",
+            ],
+        }
+    }
+}
