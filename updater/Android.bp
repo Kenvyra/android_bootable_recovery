@@ -268,6 +268,10 @@ cc_binary {
        "register.inc",
     ],
     static_executable: true,
+
+    lto: {
+        never: true,
+    },
 }
 
 cc_defaults {
